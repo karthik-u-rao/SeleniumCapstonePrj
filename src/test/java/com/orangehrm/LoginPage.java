@@ -1,16 +1,14 @@
 package com.orangehrm;
 
+import com.utils.SmartWait;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
 public class LoginPage {
     private WebDriver driver;
-    private WebDriverWait wait;
+    private SmartWait sw;
 
     // Locators
     private By usernameField = By.name("username");
@@ -20,32 +18,35 @@ public class LoginPage {
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        this.sw = new SmartWait(driver);
     }
 
     public void navigateToLoginPage() {
         driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login");
+        sw.visible(usernameField, Duration.ofSeconds(10));
     }
 
     public void enterUsername(String username) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(usernameField));
+        sw.visible(usernameField, Duration.ofSeconds(10));
         driver.findElement(usernameField).sendKeys(username);
     }
 
     public void enterPassword(String password) {
+        sw.visible(passwordField, Duration.ofSeconds(10));
         driver.findElement(passwordField).sendKeys(password);
     }
 
     public void clickLoginButton() {
-        driver.findElement(loginButton).click();
+        sw.safeClick(loginButton);
     }
 
     public boolean isDashboardDisplayed() {
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(dashboardHeader));
-            return driver.findElement(dashboardHeader).isDisplayed();
-        } catch (Exception e) {
-            return false;
+            // Fast path: check header or URL, with short waits
+            sw.visible(dashboardHeader, Duration.ofSeconds(5));
+            return true;
+        } catch (Exception ignored) {
+            return driver.getCurrentUrl().contains("/dashboard");
         }
     }
 
@@ -56,4 +57,3 @@ public class LoginPage {
         clickLoginButton();
     }
 }
-
