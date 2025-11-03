@@ -1,13 +1,15 @@
 package com.orangehrm;
 
-import com.utils.EnglishBaseTest;
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.List;
+import com.utils.EnglishBaseTest;
 
 public class OrangeHRMTests extends EnglishBaseTest {
 
@@ -43,10 +45,10 @@ public class OrangeHRMTests extends EnglishBaseTest {
         RecruitmentPage recruitmentPage = new RecruitmentPage(driver);
         String timestamp = String.valueOf(System.currentTimeMillis());
         recruitmentPage.addCandidate(
-            "John" + timestamp.substring(timestamp.length() - 4),
-            "Robert",
-            "Doe",
-            "john.doe" + timestamp.substring(timestamp.length() - 6) + "@test.com"
+                "John" + timestamp.substring(timestamp.length() - 4),
+                "Robert",
+                "Doe",
+                "john.doe" + timestamp.substring(timestamp.length() - 6) + "@test.com"
         );
         System.out.println("✓ Add Candidate test passed successfully");
     }
@@ -68,73 +70,21 @@ public class OrangeHRMTests extends EnglishBaseTest {
         System.out.println("✓ Dashboard quick launch cards visible");
     }
 
-    @Test(priority = 7, description = "Verify Admin page loads")
-    public void testAdminPageLoads() {
+    @Test(priority = 7, dataProvider = "mainMenuSmokeData", description = "Verify key main menu modules load")
+    public void testMainMenuModuleLoads(String menuText, String expectedUrlFragment, By[] mustSeeElements) {
         loginAsAdmin();
-        clickMainMenu("Admin");
-        WebElement adminHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h6[text()='Admin']")));
-        Assert.assertTrue(adminHeader.isDisplayed(), "Admin page header not visible");
-        System.out.println("✓ Admin page loads");
+        clickMainMenu(menuText);
+        if (expectedUrlFragment != null && !expectedUrlFragment.isBlank()) {
+            wait.until(ExpectedConditions.urlContains(expectedUrlFragment));
+        }
+        for (By locator : mustSeeElements) {
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            Assert.assertTrue(element.isDisplayed(), "Expected element not visible for module " + menuText);
+        }
+        System.out.println("✓ " + menuText + " module loads");
     }
 
-    @Test(priority = 8, description = "Verify PIM employee list page loads")
-    public void testPimPageLoads() {
-        loginAsAdmin();
-        clickMainMenu("PIM");
-        WebElement pimHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h6[text()='PIM']")));
-        WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.oxd-table")));
-        Assert.assertTrue(pimHeader.isDisplayed() && table.isDisplayed(), "PIM page elements missing");
-        System.out.println("✓ PIM page loads with table");
-    }
-
-    @Test(priority = 9, description = "Verify Time page loads")
-    public void testTimePageLoads() {
-        loginAsAdmin();
-        clickMainMenu("Time");
-        WebElement timeHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h6[text()='Time']")));
-        Assert.assertTrue(timeHeader.isDisplayed(), "Time page header not visible");
-        System.out.println("✓ Time page loads");
-    }
-
-    @Test(priority = 10, description = "Verify My Info page shows personal details")
-    public void testMyInfoPageLoads() {
-        loginAsAdmin();
-        clickMainMenu("My Info");
-        WebElement personalDetailsHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h6[text()='Personal Details']")));
-        Assert.assertTrue(personalDetailsHeader.isDisplayed(), "Personal Details header not visible");
-        System.out.println("✓ My Info page loads");
-    }
-
-    @Test(priority = 11, description = "Verify Directory page loads")
-    public void testDirectoryPageLoads() {
-        loginAsAdmin();
-        clickMainMenu("Directory");
-        WebElement directoryHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h6[text()='Directory']")));
-        WebElement searchInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[placeholder='Type for hints...']")));
-        Assert.assertTrue(directoryHeader.isDisplayed() && searchInput.isDisplayed(), "Directory search not visible");
-        System.out.println("✓ Directory page loads");
-    }
-
-    @Test(priority = 12, description = "Verify Performance page loads")
-    public void testPerformancePageLoads() {
-        loginAsAdmin();
-        clickMainMenu("Performance");
-        WebElement performanceHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h6[text()='Performance']")));
-        Assert.assertTrue(performanceHeader.isDisplayed(), "Performance page header missing");
-        System.out.println("✓ Performance page loads");
-    }
-
-    @Test(priority = 13, description = "Verify Claim page loads")
-    public void testClaimPageLoads() {
-        loginAsAdmin();
-        clickMainMenu("Claim");
-        wait.until(ExpectedConditions.urlContains("/claim"));
-        WebElement claimHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h6[contains(normalize-space(),'Claim')]")));
-        Assert.assertTrue(claimHeader.isDisplayed(), "Claim page header missing");
-        System.out.println("✓ Claim page loads");
-    }
-
-    @Test(priority = 14, description = "Verify Maintenance password prompt appears")
+    @Test(priority = 8, description = "Verify Maintenance password prompt appears")
     public void testMaintenancePromptAppears() {
         loginAsAdmin();
         clickMainMenu("Maintenance");
@@ -144,12 +94,25 @@ public class OrangeHRMTests extends EnglishBaseTest {
         System.out.println("✓ Maintenance access screen displayed");
     }
 
-    @Test(priority = 15, description = "Verify dashboard widgets render")
+    @Test(priority = 9, description = "Verify dashboard widgets render")
     public void testDashboardWidgetsVisible() {
         loginAsAdmin();
         List<WebElement> widgets = driver.findElements(By.cssSelector("div.orangehrm-dashboard-widget"));
         Assert.assertTrue(widgets.size() >= 1, "Dashboard widgets not visible");
         System.out.println("✓ Dashboard widgets visible");
+    }
+
+    @DataProvider(name = "mainMenuSmokeData")
+    public Object[][] mainMenuSmokeData() {
+        return new Object[][]{
+            {"Admin", "/admin", new By[]{By.xpath("//h6[text()='Admin']")}},
+            {"PIM", "/pim", new By[]{By.xpath("//h6[text()='PIM']"), By.cssSelector("div.oxd-table")}},
+            {"Time", "/time", new By[]{By.xpath("//h6[text()='Time']")}},
+            {"My Info", "/viewPersonalDetails", new By[]{By.xpath("//h6[text()='Personal Details']")}},
+            {"Directory", "/directory", new By[]{By.xpath("//h6[text()='Directory']"), By.cssSelector("input[placeholder='Type for hints...']")}},
+            {"Performance", "/performance", new By[]{By.xpath("//h6[text()='Performance']")}},
+            {"Claim", "/claim", new By[]{By.xpath("//h6[contains(normalize-space(),'Claim')]")}}
+        };
     }
 
     private void loginAsAdmin() {
