@@ -158,4 +158,50 @@ mvn -Dsurefire.suiteXmlFiles=testng-orangehrm.xml test
 - WebDriverManager caches downloaded drivers in the user profile; clear `%USERPROFILE%/.cache/selenium` if you need a fresh binary.
 - The API mock intentionally delays the `/users?delay=3` response (~2.6s) to keep the timing assertion meaningful.
 
-Happy testing!
+## Running in Eclipse (TestNG)
+
+Follow these steps to run the tests from Eclipse with a visible browser for OrangeHRM:
+
+1) Install TestNG plugin
+- Help > Eclipse Marketplace…
+- Search for "TestNG" and install "TestNG for Eclipse"
+- Restart Eclipse if prompted
+
+2) Import the Maven project
+- File > Import… > Maven > Existing Maven Projects
+- Root Directory: `C:\Users\P12C4F0\IdeaProjects\SeleniumCapstonPrj`
+- Finish
+- Right‑click the project > Maven > Update Project… (select the project) > OK
+
+3) Ensure Java 11+ is configured
+- Window > Preferences > Java > Installed JREs: add/select a JDK 11+
+- Project-specific: Right‑click project > Properties > Java Compiler: set compliance to 11 (or higher)
+
+4) Run as a TestNG Suite (grouped runs)
+- ReqRes only: right‑click `testng-reqres.xml` > Run As > TestNG Suite
+- BMI only: right‑click `testng-bmi.xml` > Run As > TestNG Suite
+- OrangeHRM headed: right‑click `testng-orangehrm.xml` > Run As > TestNG Suite (launches Chrome visibly)
+
+5) Run individual TestNG classes (fast)
+- ReqRes API: right‑click `src/test/java/com/reqres/ReqResAPITests.java` > Run As > TestNG Test
+- BMI (Cucumber via TestNG): right‑click `src/test/java/com/bmicalculator/BMICalculatorRunner.java` > Run As > TestNG Test
+- OrangeHRM (headed): right‑click `src/test/java/com/orangehrm/OrangeHRMTests.java` > Run As > TestNG Test
+
+6) Optional: Create persistent Run Configurations
+- Run > Run Configurations… > TestNG
+- Suite-based: set Project = SeleniumCapstonPrj, Suite = (e.g.) `testng-orangehrm.xml`
+- Class-based: set Project and Test class (e.g., `com.orangehrm.OrangeHRMTests`)
+- VM arguments (optional headless for non-UI runs): `-Dheadless=true`
+  - Note: Only the `-Dheadless` JVM property controls headless; UI is visible by default.
+
+7) View reports
+- TestNG results view: Window > Show View > Other… > TestNG > Results
+- HTML reports:
+  - TestNG: `target/surefire-reports/index.html`
+  - Cucumber (BMI): `target/cucumber-reports/cucumber.html`
+
+Troubleshooting (Eclipse)
+- WebDriver versions: WebDriverManager fetches drivers automatically. If Chrome updated, re-run or clear `%USERPROFILE%\.cache\selenium`.
+- CDP warnings for Chrome: benign unless you use DevTools APIs.
+- OrangeHRM loader overlay: tests include waits for `.oxd-form-loader`. If a rare click interception occurs, re-run; if persistent, increase waits slightly.
+- Maven settings warning: If you see "Unrecognised tag: 'repositories'" in `~/.m2/settings.xml`, remove the top-level `<repositories>` or move it under a `<profile>`.
