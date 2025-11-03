@@ -1,17 +1,14 @@
 package com.orangehrm;
 
+import com.utils.SmartWait;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
 import java.time.Duration;
 
 public class RecruitmentPage {
     private WebDriver driver;
-    private WebDriverWait wait;
+    private SmartWait sw;
 
     // Locators
     private By recruitmentMenu = By.xpath("//span[text()='Recruitment']");
@@ -30,38 +27,39 @@ public class RecruitmentPage {
 
     public RecruitmentPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        this.sw = new SmartWait(driver);
     }
 
     public void navigateToRecruitment() {
-        wait.until(ExpectedConditions.elementToBeClickable(recruitmentMenu));
-        driver.findElement(recruitmentMenu).click();
+        sw.safeClick(recruitmentMenu);
     }
 
     public void clickAddButton() {
-        wait.until(ExpectedConditions.elementToBeClickable(addButton));
-        driver.findElement(addButton).click();
+        sw.safeClick(addButton);
     }
 
     public void enterFirstName(String firstName) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(firstNameField));
-        driver.findElement(firstNameField).sendKeys(firstName);
+        WebElement el = sw.visible(firstNameField, Duration.ofSeconds(10));
+        el.sendKeys(firstName);
     }
 
     public void enterMiddleName(String middleName) {
-        driver.findElement(middleNameField).sendKeys(middleName);
+        WebElement el = sw.visible(middleNameField, Duration.ofSeconds(10));
+        el.sendKeys(middleName);
     }
 
     public void enterLastName(String lastName) {
-        driver.findElement(lastNameField).sendKeys(lastName);
+        WebElement el = sw.visible(lastNameField, Duration.ofSeconds(10));
+        el.sendKeys(lastName);
     }
 
     public void enterEmail(String email) {
-        driver.findElement(emailField).sendKeys(email);
+        WebElement el = sw.visible(emailField, Duration.ofSeconds(10));
+        el.sendKeys(email);
     }
 
     public void clickSaveButton() {
-        driver.findElement(saveButton).click();
+        sw.safeClick(saveButton);
     }
 
     public void addCandidate(String firstName, String middleName, String lastName, String email) {
@@ -76,34 +74,29 @@ public class RecruitmentPage {
 
     public void navigateToCandidates() {
         navigateToRecruitment();
-        wait.until(ExpectedConditions.elementToBeClickable(candidatesLink));
-        driver.findElement(candidatesLink).click();
+        sw.safeClick(candidatesLink);
     }
 
     public boolean isCandidateTableDisplayed() {
         try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(candidateTable));
-            return driver.findElement(candidateTable).isDisplayed();
+            sw.visible(candidateTable, Duration.ofSeconds(10));
+            return true;
         } catch (Exception e) {
             return false;
         }
     }
 
     public void deleteFirstCandidate() {
-        wait.until(ExpectedConditions.elementToBeClickable(deleteButton));
-        driver.findElements(deleteButton).get(0).click();
-        wait.until(ExpectedConditions.elementToBeClickable(confirmDeleteButton));
-        driver.findElement(confirmDeleteButton).click();
+        sw.safeClick(deleteButton);
+        sw.safeClick(confirmDeleteButton);
     }
 
     public void editFirstCandidate() {
-        wait.until(ExpectedConditions.elementToBeClickable(editButton));
-        driver.findElements(editButton).get(0).click();
+        sw.safeClick(editButton);
     }
 
     public void updateCandidateMiddleName(String newMiddleName) {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(middleNameField));
-        WebElement middleName = driver.findElement(middleNameField);
+        WebElement middleName = sw.visible(middleNameField, Duration.ofSeconds(10));
         middleName.clear();
         middleName.sendKeys(newMiddleName);
         clickSaveButton();

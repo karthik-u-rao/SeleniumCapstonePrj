@@ -1,10 +1,10 @@
 package com.orangehrm;
 
-import com.utils.BaseTest;
+import com.utils.EnglishBaseTest;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class OrangeHRMTests extends BaseTest {
+public class OrangeHRMTests extends EnglishBaseTest {
 
     @Test(priority = 1, description = "Test successful login to OrangeHRM")
     public void testLogin() {

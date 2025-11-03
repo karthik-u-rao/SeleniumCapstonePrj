@@ -25,7 +25,7 @@ src/test/
 │   ├── orangehrm/         # Page objects + TestNG suite
 │   ├── reqres/            # Mock-backed Rest Assured tests
 │   ├── bmicalculator/     # Cucumber steps + TestNG runner
-│   └── utils/             # Shared Selenium base test
+│   └── utils/             # Shared Selenium base tests
 └── resources/features/    # BMI feature file
 
 pom.xml                    # Maven build definition
@@ -42,8 +42,8 @@ run-tests.bat              # Optional Windows helper to run mvn test
 3. Clone the repo and install dependencies:
 
 ```powershell
-git clone https://github.com/karthikurao/SeleniumCapstonePrj.git
-cd SeleniumCapstonePrj
+git clone <your-fork-or-origin>
+cd SeleniumCapstonPrj
 mvn -q dependency:go-offline
 ```
 
@@ -51,13 +51,11 @@ mvn -q dependency:go-offline
 
 Run the full suite (UI + API + Cucumber):
 
-```powershell
+```cmd
 mvn clean test
 ```
 
 Run individual suites (Option B – recommended):
-
-Use class-based selection to avoid shell quoting issues.
 
 ```cmd
 :: ReqRes API (fast)
@@ -66,20 +64,15 @@ mvn test -Dtest=ReqResAPITests
 :: BMI Cucumber (fast)
 mvn test -Dtest=BMICalculatorRunner
 
-:: OrangeHRM UI (headed)
+:: OrangeHRM UI (headed by default)
 mvn test -Dtest=OrangeHRMTests
 ```
 
-Optional: Run by TestNG suite XML (ensure proper quoting in PowerShell)
+Optional: Run by TestNG suite XML (use quotes if needed in PowerShell)
 
 ```cmd
-:: ReqRes API only
 mvn test -Dsurefire.suiteXmlFiles=testng-reqres.xml
-
-:: BMI only
 mvn test -Dsurefire.suiteXmlFiles=testng-bmi.xml
-
-:: OrangeHRM UI only (headed)
 mvn test -Dsurefire.suiteXmlFiles=testng-orangehrm.xml
 ```
 
@@ -89,119 +82,75 @@ PowerShell users: quote the -D argument, e.g.
 mvn test "-Dsurefire.suiteXmlFiles=testng-reqres.xml"
 ```
 
-Note: If you see "Unknown lifecycle phase '.suiteXmlFiles=…'", your shell parsed the -D incorrectly. Prefer Option B (-Dtest=...) or quote as shown above.
+If you see "Unknown lifecycle phase '.suiteXmlFiles=…'", your shell parsed -D incorrectly. Prefer -Dtest=... or quote as shown above.
 
-Reports are generated under `target/surefire-reports/` and `target/cucumber-reports/` after a run.
+Reports are under `target/surefire-reports/` and `target/cucumber-reports/`.
 
-## Run specific suites (fast paths)
+### Headless mode (opt-in)
 
-You can also use the interactive helper script:
-
-```cmd
-run-tests.bat
-```
-
-- 2) ReqRes API only
-- 3) BMI only
-- 4) OrangeHRM UI only (headed)
-- 1) All (headed)
-
-Headless mode is only offered for the fast suites via the menu. You can always force headless explicitly with `-Dheadless=true` if desired.
-
-### Headless mode
-
-All UI tests support headless execution. Enable it with either approach:
+UI tests are headed by default. Enable headless explicitly:
 
 ```cmd
-mvn -Dheadless=true -Dsurefire.suiteXmlFiles=testng-orangehrm.xml test
+mvn test -Dtest=OrangeHRMTests -Dheadless=true
 ```
 
-Or set an environment variable (Windows PowerShell example):
+## Notes on OrangeHRM tests
 
-```powershell
-$env:HEADLESS='true'
-mvn -Dsurefire.suiteXmlFiles=testng-orangehrm.xml test
-```
-
-## Troubleshooting OrangeHRM runs
-
-- Element click intercepted / loader overlays: The OrangeHRM pages display a transient loader (`.oxd-form-loader`). Tests now wait for the loader to disappear around key clicks, but on slow networks you may still see intermittent “element click intercepted”. Re-run; if persistent, increase waits a bit.
-- Chrome DevTools Protocol (CDP) warnings: You may see messages like “Unable to find CDP implementation matching 141”. These are benign unless you use devtools APIs. If you do, add a matching devtools artifact, e.g.:
-  - `org.seleniumhq.selenium:selenium-devtools-v141:4.15.0`
-- Headless stability: On some environments headless is more reliable. Use `-Dheadless=true` as shown above.
-- Driver mismatch: WebDriverManager resolves drivers automatically. If Chrome just updated, clear the cache at `%USERPROFILE%\.cache\selenium` or re-run to refresh.
+- The tests now force Chrome to use English (en-US) via a dedicated base class `EnglishBaseTest`, ensuring the OrangeHRM demo always loads in English.
+- Smart waiting: interactions use `SmartWait` for overlay-aware clicks (handles `.oxd-form-loader` / `.oxd-loading-spinner`) without globally increasing waits.
+- If you still see rare click interceptions, re-run or slightly increase the per-action timeouts in `SmartWait` methods only.
 
 ## What the tests cover
 
 ### OrangeHRM UI
 
-- **Login** with default demo credentials (`Admin` / `admin123`).
-- **Apply Leave** workflow with date selection and comment entry.
-- **View Leave List** filtering to confirm newly applied leave visibility.
-- **Recruitment** module coverage for adding and listing candidates.
+- Login with demo credentials (`Admin` / `admin123`).
+- Apply Leave workflow and View Leave List.
+- Recruitment module: add candidate and view candidates.
 
 ### ReqRes API
 
-- Exercises the CRUD login and registration endpoints exposed by ReqRes.
-- Assertions cover status codes and key payload fields.
-- Responses are supplied by `ReqResMockFilter` so the suite works offline and avoids third-party rate limits.
+- CRUD-style endpoints with assertions on status and payload.
+- All responses are provided by an in-memory filter (`ReqResMockFilter`) so tests work offline deterministically.
 
 ### BMI Calculator (Cucumber)
 
-- Metric and US unit calculations with validation of BMI value and category.
-- Scenario outline with multiple data sets.
-- “Clear” workflow to ensure state resets between calculations.
-
-## Notes & tips
-
-- `BaseTest` spins up Chrome in headed mode. If you need headless execution, add `options.addArguments("--headless=new")` in that class.
-- WebDriverManager caches downloaded drivers in the user profile; clear `%USERPROFILE%/.cache/selenium` if you need a fresh binary.
-- The API mock intentionally delays the `/users?delay=3` response (~2.6s) to keep the timing assertion meaningful.
+- Metric and US unit BMI calculations with scenario outlines and validations.
 
 ## Running in Eclipse (TestNG)
-
-Follow these steps to run the tests from Eclipse with a visible browser for OrangeHRM:
 
 1) Install TestNG plugin
 - Help > Eclipse Marketplace…
 - Search for "TestNG" and install "TestNG for Eclipse"
-- Restart Eclipse if prompted
 
 2) Import the Maven project
 - File > Import… > Maven > Existing Maven Projects
-- Root Directory: `C:\Users\P12C4F0\IdeaProjects\SeleniumCapstonPrj`
-- Finish
-- Right‑click the project > Maven > Update Project… (select the project) > OK
+- Root Directory: your project folder
+- Finish, then Right‑click project > Maven > Update Project…
 
 3) Ensure Java 11+ is configured
-- Window > Preferences > Java > Installed JREs: add/select a JDK 11+
-- Project-specific: Right‑click project > Properties > Java Compiler: set compliance to 11 (or higher)
+- Window > Preferences > Java > Installed JREs: select a JDK 11+
+- Project > Properties > Java Compiler: set compliance to 11 (or higher)
 
-4) Run as a TestNG Suite (grouped runs)
-- ReqRes only: right‑click `testng-reqres.xml` > Run As > TestNG Suite
-- BMI only: right‑click `testng-bmi.xml` > Run As > TestNG Suite
-- OrangeHRM headed: right‑click `testng-orangehrm.xml` > Run As > TestNG Suite (launches Chrome visibly)
+4) Run suites
+- Right‑click `testng-reqres.xml` > Run As > TestNG Suite
+- Right‑click `testng-bmi.xml` > Run As > TestNG Suite
+- Right‑click `testng-orangehrm.xml` > Run As > TestNG Suite (headed by default)
 
-5) Run individual TestNG classes (fast)
-- ReqRes API: right‑click `src/test/java/com/reqres/ReqResAPITests.java` > Run As > TestNG Test
-- BMI (Cucumber via TestNG): right‑click `src/test/java/com/bmicalculator/BMICalculatorRunner.java` > Run As > TestNG Test
-- OrangeHRM (headed): right‑click `src/test/java/com/orangehrm/OrangeHRMTests.java` > Run As > TestNG Test
+5) Run classes
+- Right‑click `src/test/java/com/reqres/ReqResAPITests.java` > Run As > TestNG Test
+- Right‑click `src/test/java/com/bmicalculator/BMICalculatorRunner.java` > Run As > TestNG Test
+- Right‑click `src/test/java/com/orangehrm/OrangeHRMTests.java` > Run As > TestNG Test
 
-6) Optional: Create persistent Run Configurations
-- Run > Run Configurations… > TestNG
-- Suite-based: set Project = SeleniumCapstonPrj, Suite = (e.g.) `testng-orangehrm.xml`
-- Class-based: set Project and Test class (e.g., `com.orangehrm.OrangeHRMTests`)
-- VM arguments (optional headless for non-UI runs): `-Dheadless=true`
-  - Note: Only the `-Dheadless` JVM property controls headless; UI is visible by default.
+6) Optional headless
+- In Run Configurations… > TestNG > (your config) > Arguments > VM arguments: `-Dheadless=true`
 
 7) View reports
-- TestNG results view: Window > Show View > Other… > TestNG > Results
-- HTML reports:
-  - TestNG: `target/surefire-reports/index.html`
-  - Cucumber (BMI): `target/cucumber-reports/cucumber.html`
+- TestNG Results view and `target/surefire-reports/index.html`
+- Cucumber HTML: `target/cucumber-reports/cucumber.html`
 
-Troubleshooting (Eclipse)
-- WebDriver versions: WebDriverManager fetches drivers automatically. If Chrome updated, re-run or clear `%USERPROFILE%\.cache\selenium`.
-- CDP warnings for Chrome: benign unless you use DevTools APIs.
-- OrangeHRM loader overlay: tests include waits for `.oxd-form-loader`. If a rare click interception occurs, re-run; if persistent, increase waits slightly.
-- Maven settings warning: If you see "Unrecognised tag: 'repositories'" in `~/.m2/settings.xml`, remove the top-level `<repositories>` or move it under a `<profile>`.
+## Troubleshooting
+
+- Chrome DevTools warnings about CDP versions are benign unless you use DevTools APIs.
+- If WebDriverManager has a stale driver after Chrome updates, clear `%USERPROFILE%\.cache\selenium`.
+- If your Maven `~/.m2/settings.xml` contains `<repositories>` at top level, move it under a `<profile>` to avoid warnings.
