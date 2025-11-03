@@ -22,13 +22,8 @@ public class OrangeHRMTests extends BaseTest {
 
         // Apply for leave
         LeavePage leavePage = new LeavePage(driver);
-        try {
-            leavePage.applyLeave("2025-12-20", "2025-12-22", "Vacation leave for year end");
-            Thread.sleep(2000); // Wait for application to process
-            System.out.println("✓ Apply Leave test passed successfully");
-        } catch (Exception e) {
-            System.out.println("Note: Leave application may have succeeded - " + e.getMessage());
-        }
+        leavePage.applyLeave("2025-12-20", "2025-12-22", "Vacation leave for year end");
+        System.out.println("✓ Apply Leave test passed successfully");
     }
 
     @Test(priority = 3, description = "Test viewing leave list")
@@ -59,12 +54,7 @@ public class OrangeHRMTests extends BaseTest {
             "Doe",
             "john.doe" + timestamp.substring(timestamp.length() - 6) + "@test.com"
         );
-        try {
-            Thread.sleep(3000); // Wait for save
-            System.out.println("✓ Add Candidate test passed successfully");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        System.out.println("✓ Add Candidate test passed successfully");
     }
 
     @Test(priority = 5, description = "Test viewing candidates list")
@@ -80,4 +70,3 @@ public class OrangeHRMTests extends BaseTest {
         System.out.println("✓ View Candidates test passed successfully");
     }
 }
-

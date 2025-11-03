@@ -21,6 +21,14 @@ public class BaseTest {
         options.addArguments("--start-maximized");
         options.addArguments("--disable-notifications");
         options.addArguments("--remote-allow-origins=*");
+        // Enable headless via -Dheadless=true or env HEADLESS=true
+        String headlessProp = System.getProperty("headless");
+        if (headlessProp == null) headlessProp = System.getenv("HEADLESS");
+        boolean headless = Boolean.parseBoolean(headlessProp != null ? headlessProp : "false");
+        if (headless) {
+            options.addArguments("--headless=new");
+            options.addArguments("--window-size=1920,1080");
+        }
         driver = new ChromeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
@@ -33,4 +41,3 @@ public class BaseTest {
         }
     }
 }
-

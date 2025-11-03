@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="OrangeHRM UI Suite" verbose="1">
+    <test name="OrangeHRM Tests">
+        <classes>
+            <class name="com.orangehrm.OrangeHRMTests"/>
+        </classes>
+    </test>
+</suite>
+

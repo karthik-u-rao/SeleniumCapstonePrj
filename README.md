@@ -70,6 +70,47 @@ mvn test -Dtest=BMICalculatorRunner
 
 Reports are generated under `target/surefire-reports/` and `target/cucumber-reports/` after a run.
 
+## Run specific suites (fast paths)
+
+You can run focused areas using dedicated TestNG suite files:
+
+```cmd
+mvn -Dsurefire.suiteXmlFiles=testng-reqres.xml test    // ReqRes API only
+mvn -Dsurefire.suiteXmlFiles=testng-bmi.xml test       // BMI Cucumber only
+mvn -Dsurefire.suiteXmlFiles=testng-orangehrm.xml test // OrangeHRM UI only
+```
+
+Or use the helper script with an interactive menu:
+
+```cmd
+run-tests.bat
+```
+
+It lets you pick All/ReqRes/BMI/OrangeHRM and optionally run headless.
+
+### Headless mode
+
+All UI tests support headless execution. Enable it with either approach:
+
+```cmd
+mvn -Dheadless=true -Dsurefire.suiteXmlFiles=testng-orangehrm.xml test
+```
+
+Or set an environment variable (Windows PowerShell example):
+
+```powershell
+$env:HEADLESS='true'
+mvn -Dsurefire.suiteXmlFiles=testng-orangehrm.xml test
+```
+
+## Troubleshooting OrangeHRM runs
+
+- Element click intercepted / loader overlays: The OrangeHRM pages display a transient loader (`.oxd-form-loader`). Tests now wait for the loader to disappear around key clicks, but on slow networks you may still see intermittent “element click intercepted”. Re-run; if persistent, increase waits a bit.
+- Chrome DevTools Protocol (CDP) warnings: You may see messages like “Unable to find CDP implementation matching 141”. These are benign unless you use devtools APIs. If you do, add a matching devtools artifact, e.g.:
+  - `org.seleniumhq.selenium:selenium-devtools-v141:4.15.0`
+- Headless stability: On some environments headless is more reliable. Use `-Dheadless=true` as shown above.
+- Driver mismatch: WebDriverManager resolves drivers automatically. If Chrome just updated, clear the cache at `%USERPROFILE%\.cache\selenium` or re-run to refresh.
+
 ## What the tests cover
 
 ### OrangeHRM UI
@@ -98,4 +139,3 @@ Reports are generated under `target/surefire-reports/` and `target/cucumber-repo
 - The API mock intentionally delays the `/users?delay=3` response (~2.6s) to keep the timing assertion meaningful.
 
 Happy testing!
-

@@ -23,20 +23,29 @@ public class LeavePage {
     private By applyLeaveButton = By.cssSelector("button[type='submit']");
     private By myLeaveLink = By.linkText("My Leave");
     private By leaveListTable = By.cssSelector(".oxd-table");
+    private By formLoader = By.cssSelector(".oxd-form-loader");
 
     public LeavePage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
+    private void waitForLoaderToDisappear() {
+        try {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(formLoader));
+        } catch (Exception ignored) { }
+    }
+
     public void navigateToLeave() {
         wait.until(ExpectedConditions.elementToBeClickable(leaveMenu));
         driver.findElement(leaveMenu).click();
+        waitForLoaderToDisappear();
     }
 
     public void clickApply() {
         wait.until(ExpectedConditions.elementToBeClickable(applyButton));
         driver.findElement(applyButton).click();
+        waitForLoaderToDisappear();
     }
 
     public void selectLeaveType() {
@@ -44,6 +53,7 @@ public class LeavePage {
         driver.findElement(leaveTypeDropdown).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(leaveTypeOption));
         driver.findElements(leaveTypeOption).get(1).click(); // Select first available leave type
+        waitForLoaderToDisappear();
     }
 
     public void enterFromDate(String date) {
@@ -63,7 +73,9 @@ public class LeavePage {
     }
 
     public void clickApplyLeaveButton() {
+        wait.until(ExpectedConditions.elementToBeClickable(applyLeaveButton));
         driver.findElement(applyLeaveButton).click();
+        waitForLoaderToDisappear();
     }
 
     public void applyLeave(String fromDate, String toDate, String comments) {
@@ -80,6 +92,7 @@ public class LeavePage {
         navigateToLeave();
         wait.until(ExpectedConditions.elementToBeClickable(myLeaveLink));
         driver.findElement(myLeaveLink).click();
+        waitForLoaderToDisappear();
     }
 
     public boolean isLeaveListDisplayed() {
@@ -91,4 +104,3 @@ public class LeavePage {
         }
     }
 }
-

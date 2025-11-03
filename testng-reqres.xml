@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="ReqRes API Suite" verbose="1">
+    <test name="ReqRes API Tests">
+        <classes>
+            <class name="com.reqres.ReqResAPITests"/>
+        </classes>
+    </test>
+</suite>
+

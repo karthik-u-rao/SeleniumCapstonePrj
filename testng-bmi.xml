@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="BMI Calculator Suite" verbose="1">
+    <test name="BMI Calculator Cucumber Tests">
+        <classes>
+            <class name="com.bmicalculator.BMICalculatorRunner"/>
+        </classes>
+    </test>
+</suite>
+
